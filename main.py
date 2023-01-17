@@ -18,6 +18,7 @@ for i, item in enumerate(data):
     if i != target_id: continue
 
     pid = item["pid"]
+    head = item["text"]
 
     y = requests.get(f"https://api.shudongdehouduan.click//_api/v1/getcomment?pid={pid}", headers=headers)
     response = json.loads(y.text)
@@ -28,10 +29,9 @@ for i, item in enumerate(data):
         f.write(json.dumps(comment, indent=4, ensure_ascii=False))
 
     with open(f"record{i}_pid{pid}.txt", "w", encoding="utf-8") as f:
+        f.write(head + "\n\n")
         for sentence in comment:
             f.write(sentence["text"] + "\n\n")
-
-
     
     break
 
