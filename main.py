@@ -1,5 +1,7 @@
 import requests
 import json
+import os
+from tqdm import tqdm
 
 
 headers = {
@@ -7,18 +9,28 @@ headers = {
     "user-token": "Hf3uOkLbkBjQkOnu"
 }
 
+record_dir = "record/"
+if not os.path.exists(record_dir):
+    os.mkdir(record_dir)
+
+hot_page_id = 1
+
 # 获取热榜 id
-x = requests.get("https://api.shudongdehouduan.click//_api/v1/getlist?p=1&order_mode=2&room_id=", 
+x = requests.get(f"https://api.shudongdehouduan.click//_api/v1/getlist?p={hot_page_id}&order_mode=2&room_id=", 
                  headers=headers)
 
 response = json.loads(x.text)
 data = response["data"]
 
 # 爬取热榜第一 
-# target_id = 1
 
-for i, item in enumerate(data):
+counter = 0
+
+for i, item in tqdm(enumerate(data)):
     # if i != target_id: continue
+
+    if not (item["cw"] == "性相关" or item["cw"] == "xxg"):
+        continue
 
     pid = item["pid"]
     head = item["text"]
@@ -28,15 +40,17 @@ for i, item in enumerate(data):
 
     comment = response["data"]
 
-    with open(f"record{i}_pid{pid}.json", "w", encoding="utf-8") as f:
+    with open(os.path.join(record_dir, f"record{i}_pid{pid}.json"), "w", encoding="utf-8") as f:
         f.write(json.dumps(comment, indent=4, ensure_ascii=False))
 
-    with open(f"record{i}_pid{pid}.txt", "w", encoding="utf-8") as f:
+    with open(os.path.join(record_dir, f"record{i}_pid{pid}.txt"), "w", encoding="utf-8") as f:
         f.write(head + "\n\n")
         for sentence in comment:
             f.write(sentence["text"] + "\n\n")
     
-    break
+    counter += 1
+
+print("total xxg is", counter)
 
 
 
